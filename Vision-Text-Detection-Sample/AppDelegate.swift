@@ -15,7 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let window = UIWindow()
-        window.rootViewController = CameraViewController()
+        guard let session = SessionBuilder.makeCaptureSession() else {
+            fatalError()
+        }
+        window.rootViewController = CameraViewController(session: session)
         self.window = window
         self.window?.makeKeyAndVisible()
         return true
