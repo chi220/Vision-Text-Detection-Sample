@@ -121,44 +121,29 @@ final class CameraViewController: UIViewController {
         }
     }
 
+    /*
+     VisionFrameworkから返されるframeをUIKitで扱う用に変換する
+     Visionから返ってくる値の座標系は原点 (0, 0) が画像左下、正の方向が画像右上となっている
+     UIKitの座標系は原点 (0, 0) が左上、正の方向が右下なので、UIKit用にマッピングする際はY軸を反転させる
+     */
+    func convertRect(fromRect: CGRect, toViewRect: UIView) -> CGRect {
+        var toRect = CGRect()
+        toRect.size.width = fromRect.size.width * toViewRect.frame.size.width
+        toRect.size.height = fromRect.size.height * toViewRect.frame.size.height
+        toRect.origin.y =  (toViewRect.frame.height) - (toViewRect.frame.height * fromRect.origin.y)
+        toRect.origin.y  = toRect.origin.y - toRect.size.height
+        toRect.origin.x =  fromRect.origin.x * toViewRect.frame.size.width
+        return toRect
+    }
+
     /// 文字列ごとの枠線つける
     ///
     /// - Parameter box: 文字列の短形情報
     func highlightWord(box: VNTextObservation) {
-        guard let boxes = box.characterBoxes else {
-            return
-        }
-
-        var maxX: CGFloat = 9999.0
-        var minX: CGFloat = 0.0
-        var maxY: CGFloat = 9999.0
-        var minY: CGFloat = 0.0
-
-        for char in boxes {
-            if char.bottomLeft.x < maxX {
-                maxX = char.bottomLeft.x
-            }
-            if char.bottomRight.x > minX {
-                minX = char.bottomRight.x
-            }
-            if char.bottomRight.y < maxY {
-                maxY = char.bottomRight.y
-            }
-            if char.topRight.y > minY {
-                minY = char.topRight.y
-            }
-        }
-
-        let xCord = maxX * captureSessionView.frame.size.width
-        let yCord = (1 - minY) * captureSessionView.frame.size.height
-        let width = (minX - maxX) * captureSessionView.frame.size.width
-        let height = (minY - maxY) * captureSessionView.frame.size.height
-
         let outline = CALayer()
-        outline.frame = CGRect(x: xCord, y: yCord, width: width, height: height)
+        outline.frame = convertRect(fromRect: box.boundingBox, toViewRect: captureSessionView)
         outline.borderWidth = 2.0
         outline.borderColor = UIColor.red.cgColor
-
         captureImageView.layer.addSublayer(outline)
     }
 
@@ -167,16 +152,10 @@ final class CameraViewController: UIViewController {
     ///
     /// - Parameter box: 文字ごとの短形情報
     func highlightLetters(box: VNRectangleObservation) {
-        let xCord = box.topLeft.x * captureSessionView.frame.size.width
-        let yCord = (1 - box.topLeft.y) * captureSessionView.frame.size.height
-        let width = (box.topRight.x - box.bottomLeft.x) * captureSessionView.frame.size.width
-        let height = (box.topLeft.y - box.bottomLeft.y) * captureSessionView.frame.size.height
-
         let outline = CALayer()
-        outline.frame = CGRect(x: xCord, y: yCord, width: width, height: height)
+        outline.frame = convertRect(fromRect: box.boundingBox, toViewRect: captureSessionView)
         outline.borderWidth = 1.0
         outline.borderColor = UIColor.blue.cgColor
-
         captureImageView.layer.addSublayer(outline)
     }
 
