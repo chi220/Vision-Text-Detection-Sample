@@ -141,7 +141,7 @@ final class CameraViewController: UIViewController {
     /// - Parameter box: 文字列の短形情報
     func highlightWord(box: VNTextObservation) {
         let outline = CALayer()
-        outline.frame = convertRect(fromRect: box.boundingBox, toViewRect: captureSessionView)
+        outline.frame = convertRect(fromRect: box.boundingBox, toViewRect: captureImageView)
         outline.borderWidth = 2.0
         outline.borderColor = UIColor.red.cgColor
         captureImageView.layer.addSublayer(outline)
@@ -153,7 +153,7 @@ final class CameraViewController: UIViewController {
     /// - Parameter box: 文字ごとの短形情報
     func highlightLetters(box: VNRectangleObservation) {
         let outline = CALayer()
-        outline.frame = convertRect(fromRect: box.boundingBox, toViewRect: captureSessionView)
+        outline.frame = convertRect(fromRect: box.boundingBox, toViewRect: captureImageView)
         outline.borderWidth = 1.0
         outline.borderColor = UIColor.blue.cgColor
         captureImageView.layer.addSublayer(outline)
