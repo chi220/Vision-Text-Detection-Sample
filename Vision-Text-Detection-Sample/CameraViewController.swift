@@ -195,8 +195,8 @@ extension CameraViewController: AVCapturePhotoCaptureDelegate {
             guard let self = self else { return nil }
             if let photoData = photo.fileDataRepresentation(), let photoImage = UIImage(data: photoData) {
                 return photoImage
-            } else if let screenShotView = self.captureSessionView.snapshotView(afterScreenUpdates: true) {
-                return screenShotView.image
+            } else if let snapImage = self.captureSessionView.snapImage() {
+                return snapImage
             } else {
                 return nil
             }
@@ -220,11 +220,12 @@ private extension UIView {
             $0.removeFromSuperview()
         }
     }
-    var image: UIImage {
-        let renderer = UIGraphicsImageRenderer(bounds: bounds)
-        return renderer.image { rendererContext in
-            layer.render(in: rendererContext.cgContext)
-        }
+    func snapImage() -> UIImage? {
+        defer { UIGraphicsEndImageContext() }
+        UIGraphicsBeginImageContextWithOptions(frame.size, true, 0.0)
+        guard let context = UIGraphicsGetCurrentContext() else { return  nil }
+        layer.render(in: context)
+        return UIGraphicsGetImageFromCurrentImageContext()
     }
 }
 
